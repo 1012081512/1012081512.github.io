@@ -6,13 +6,17 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://example.com">
-  <title>Archives | He-senshan</title>
+  <title>【嵌入式】STM32-HAL库-SDIO-FatFS | He-senshan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="He-senshan">
-<meta property="og:url" content="http://example.com/archives/index.html">
+  <meta name="description" content="STM32-HAL库-SDIO-FatFS 好久没碰单片机了，感觉有点生疏。之前刚学的时候功能用得不多，外设自然也懂得不多，最多就是听过而已。真正到用的时候一脸懵，全程靠百度，面向CSDN编程。不过还好，用过就有印象，不至于以后啥都不知道。利用CubeMX生成的HAL库工程确实方便，就是编译的慢，重新生成工程会被重新覆盖，所以还是要在规定的地方进行编写代码。编程是规范了，就是不那么自由。也还不知道">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【嵌入式】STM32-HAL库-SDIO-FatFS">
+<meta property="og:url" content="http://example.com/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/index.html">
 <meta property="og:site_name" content="He-senshan">
+<meta property="og:description" content="STM32-HAL库-SDIO-FatFS 好久没碰单片机了，感觉有点生疏。之前刚学的时候功能用得不多，外设自然也懂得不多，最多就是听过而已。真正到用的时候一脸懵，全程靠百度，面向CSDN编程。不过还好，用过就有印象，不至于以后啥都不知道。利用CubeMX生成的HAL库工程确实方便，就是编译的慢，重新生成工程会被重新覆盖，所以还是要在规定的地方进行编写代码。编程是规范了，就是不那么自由。也还不知道">
 <meta property="og:locale">
+<meta property="article:published_time" content="2022-03-27T11:15:33.000Z">
+<meta property="article:modified_time" content="2022-03-27T12:51:05.753Z">
 <meta property="article:author" content="He-senshan">
 <meta name="twitter:card" content="summary">
   
@@ -148,103 +152,176 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
+            <article id="post-【嵌入式】STM32-HAL库-SDIO-FatFS" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
   
+    <h1 class="article-title" itemprop="name">
+      【嵌入式】STM32-HAL库-SDIO-FatFS
+    </h1>
   
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2022" class="archive-year">2022</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/" class="archive-article-date">
+
+        
+        <a href="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/" class="archive-article-date">
   	<time datetime="2022-03-27T11:15:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-03-27</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/">【嵌入式】STM32-HAL库-SDIO-FatFS</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="STM32-HAL库-SDIO-FatFS"><a href="#STM32-HAL库-SDIO-FatFS" class="headerlink" title="STM32-HAL库-SDIO-FatFS"></a>STM32-HAL库-SDIO-FatFS</h1><blockquote>
+<p>好久没碰单片机了，感觉有点生疏。之前刚学的时候功能用得不多，外设自然也懂得不多，最多就是听过而已。真正到用的时候一脸懵，全程靠百度，面向CSDN编程。不过还好，用过就有印象，不至于以后啥都不知道。利用CubeMX生成的HAL库工程确实方便，就是编译的慢，重新生成工程会被重新覆盖，所以还是要在规定的地方进行编写代码。编程是规范了，就是不那么自由。也还不知道现在公司里使用的产品和工具链是什么。就先这么着吧。</p>
+</blockquote>
+<blockquote>
+<p>本文目的：用STM32的HAL库进行编程，使用SD卡和FatFS文件系统进行读写</p>
+</blockquote>
+<h2 id="0-准备工作"><a href="#0-准备工作" class="headerlink" title="0 准备工作"></a>0 准备工作</h2><ol>
+<li><p>软件：</p>
+<p>IDE: Keil</p>
+<p>工程模板：STM32 CubeMX</p>
+</li>
+<li><p>硬件</p>
+<p>芯片：STM32F407VET6</p>
+<p>仿真器：CMSIS DAP</p>
+<p>USB PHY：微雪USB3300模块</p>
+</li>
+<li><p>资料</p>
+<p>野火电子、正点原子、安富莱、CSDN</p>
+</li>
+</ol>
+<h2 id="1-创建工程"><a href="#1-创建工程" class="headerlink" title="1 创建工程"></a>1 创建工程</h2><p>TO DO(突然不想写了，因为论文还没搞定。。烦死了。)</p>
 
-        <div class="article-info info-on-right">
-          
-          
+      
 
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://example.com/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/03/19/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80-1/" class="archive-article-date">
-  	<time datetime="2022-03-19T09:22:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-03-19</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/2022/03/19/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">c语言基础(1)</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
+        
+        
+    </div>
+</aside>
+
+
+
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/03/19/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80-1/">c语言基础(1)</a>
-    </h1>
+  
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/03/14/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2%E6%96%87%E7%AB%A0/" class="archive-article-date">
-  	<time datetime="2022-03-13T23:58:52.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-03-14</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/03/14/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2%E6%96%87%E7%AB%A0/">我的第一篇博客文章</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
   
 
-    
+  
 
 
           </div>
@@ -267,8 +344,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
