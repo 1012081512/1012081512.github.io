@@ -178,23 +178,24 @@
 </blockquote>
 <h2 id="0-准备工作"><a href="#0-准备工作" class="headerlink" title="0 准备工作"></a>0 准备工作</h2><ul>
 <li>IDE: Keil</li>
-<li>工程模板：STM32 CubeMX</li>
+<li>工程模板：STM32CubeMX</li>
 <li>芯片：STM32F407VET6</li>
 <li>仿真器：CMSIS DAP</li>
 <li>USB PHY：微雪USB3300模块（搭建好能读取SD卡的工程后，然后使用USB MSC类用PC进行读取）</li>
 <li>参考资料：野火电子、正点原子、安富莱、CSDN</li>
 </ul>
-<h2 id="1-创建工程"><a href="#1-创建工程" class="headerlink" title="1 创建工程"></a>1 创建工程</h2><div style="width:60%;margin:auto"><img src="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/HAL_SDIO.jpg" class></div>
+<h2 id="1-创建工程"><a href="#1-创建工程" class="headerlink" title="1 创建工程"></a>1 创建工程</h2><div style="width:70%;margin:auto"><img src="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/HAL_SDIO.jpg" class></div>
 
 <p>TO DO(突然不想写了，因为论文还没搞定。。烦死了。贴一张拍的照片吧。)</p>
-<div style="width:60%;margin:auto"><img src="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/1.jpg" class></div>
+<div style="width:70%;margin:auto"><img src="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/1.jpg" class></div>
 
+<hr>
 <p>OK，3-28 20:08   又来写了，因为论文实在不想搞，CSCD都发不了，菜到扣脚。至少在搞单片机看到运行成功都比搞论文有成就感。</p>
 <p>前面的STM32CubeMX是对SDIO的配置，只需注意使用到的SDIO模式，根据硬件来决定。看里面的选择可以知道要不1位要不就是4位。另外开启<code>SDIO_TX</code>和<code>SDIO_RX</code>的DMA传输。接下来是FatFS的配置，模式对应选择SD Card，编码开启简体中文，其他按需求开启，对应下图。</p>
-<div style="width:50%;margin:auto"><img src="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/FatFS.jpg" class></div>
+<div style="width:65%;margin:auto"><img src="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/FatFS.jpg" class></div>
 
 <p>还需修改默认堆栈大小，然后就可以生成工程了。</p>
-<div style="width:60%;margin:auto"><img src="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/Heap_Stack.jpg" class></div>
+<div style="width:70%;margin:auto"><img src="/2022/03/27/%E3%80%90%E5%B5%8C%E5%85%A5%E5%BC%8F%E3%80%91STM32-HAL%E5%BA%93-SDIO-FatFS/Heap_Stack.jpg" class></div>
 
 <h2 id="2-代码-随意-粗略分析"><a href="#2-代码-随意-粗略分析" class="headerlink" title="2 代码(随意)粗略分析"></a>2 代码(<del>随意</del>)粗略分析</h2><p>在这里还是要在捧一捧STM32CubeMX的，之前的标准库还要自己去找库和BSP，现在生成工程就可以直接使用了，连FatFS都适配了，方便不止一点点。</p>
 <p>下图是工程文件：</p>
