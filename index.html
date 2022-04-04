@@ -150,6 +150,108 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-c语言基础-2" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/04/04/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80-2/">c语言基础-2</a>
+    </h1>
+  
+
+        
+        <a href="/2022/04/04/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80-2/" class="archive-article-date">
+  	<time datetime="2022-04-04T03:04:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-04</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="C语言基础之指针"><a href="#C语言基础之指针" class="headerlink" title="C语言基础之指针"></a>C语言基础之指针</h1><blockquote>
+<p>本文内容参考《C和指针》，仅作为个人学习记录。</p>
+</blockquote>
+<h2 id="1-未初始化和非法指针"><a href="#1-未初始化和非法指针" class="headerlink" title="1 未初始化和非法指针"></a>1 未初始化和非法指针</h2><ul>
+<li><p>禁止对未初始化的指针进行赋值</p>
+<p>如以下代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> *a;</span><br><span class="line">*a = <span class="number">12</span>;<span class="comment">//错误</span></span><br></pre></td></tr></table></figure>
+
+<p>声明一个指针，是不会创建用于存储对应值的内存空间。如上所示，虽然定义了<code>int *a</code>但是并未对<code>a</code>进行初始化，即不知道<code>a</code>所指向的内存位置，所以对<code>*a</code>进行赋值会产生“段错误”（Linux下用GCC编译运行是如此）。</p>
+</li>
+</ul>
+<h2 id="2-指针常量"><a href="#2-指针常量" class="headerlink" title="2 指针常量"></a>2 指针常量</h2><ul>
+<li><p>对某个内存地址（一个数）进行操作，必须要进行指针类型强制转换。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">*<span class="number">100</span> = <span class="number">25</span>;<span class="comment">//错误</span></span><br><span class="line">*(<span class="type">int</span> *)<span class="number">100</span> = <span class="number">25</span>;<span class="comment">//正确</span></span><br></pre></td></tr></table></figure>
+
+<p>这种形式常见于微控制器的寄存器操作中，这种是在已知内存分布的情况下进行。如果未知某个内存的地址而强行进行随机地址赋值会发生不可预测的错误。</p>
+</li>
+</ul>
+<h2 id="3-指针的指针"><a href="#3-指针的指针" class="headerlink" title="3 指针的指针"></a>3 指针的指针</h2><ul>
+<li><p>指向指针的指针，目前的认知是，常用于二维数组。</p>
+<p>考虑以下声明：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">12</span>;</span><br><span class="line"><span class="type">int</span> *b = &amp;a;</span><br><span class="line"><span class="type">int</span> *c = &amp;b;<span class="comment">//指向指针变量b的指针</span></span><br></pre></td></tr></table></figure>
+
+<p>图例解释：</p>
+<div style="width:40%;margin:auto"><img src="/2022/04/04/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80-2/1.jpg" class></div>
+
+<p>由图可知，指针变量c指向了b的地址，指针变量b又指向了a变量的地址。</p>
+<p>实则，指针的指针这样的变量定义是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">12</span>;</span><br><span class="line"><span class="type">int</span> *b = &amp;a;</span><br><span class="line"><span class="type">int</span> **c = &amp;b;</span><br></pre></td></tr></table></figure>
+
+<p>双重间接访问：</p>
+<div style="width:40%;margin:auto"><img src="/2022/04/04/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80-2/2.jpg" class></div></li>
+</ul>
+<hr>
+<h1 id="一周杂记"><a href="#一周杂记" class="headerlink" title="一周杂记"></a>一周杂记</h1><p>整体心情很down，因为这个研究生越读越焦虑，看不清前方的路，不知道该往哪走。心浮气躁之时会在晚上跑跑步，听听谐聊。但作用不大，因为第二天还是要坐在那里干自己不喜欢的事。但是有时候又会想，这是不是我能力弱的借口呢？我并非不想做，而是我太菜而学不会，或者说是不会学习？不想承认这个事实而产生的焦虑感。我不否认这个可能性，也想不出能辩驳的话。</p>
+<p>但是我还是想挣扎一下，因为心里还是憋着那么一股子气，说明我还没完全放弃。</p>
+<div style="width:70%;margin:auto"><img src="/2022/04/04/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80-2/3.jpg" class></div>
+
+<div style="width:70%;margin:auto"><img src="/2022/04/04/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80-2/4.jpg" class></div>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/04/04/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80-2/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-【嵌入式】STM32-HAL库-SDIO-FatFS" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
