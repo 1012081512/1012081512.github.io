@@ -150,6 +150,145 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-RT-Thread学习" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/11/RT-Thread%E5%AD%A6%E4%B9%A0/">RT-Thread学习</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/11/RT-Thread%E5%AD%A6%E4%B9%A0/" class="archive-article-date">
+  	<time datetime="2022-05-11T12:39:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-11</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="RT-Thread"><a href="#RT-Thread" class="headerlink" title="RT-Thread"></a>RT-Thread</h1><blockquote>
+<p>通过对RT-Thread文档的的阅读以及源码实验的个人理解记录。</p>
+</blockquote>
+<h2 id="1-启动流程"><a href="#1-启动流程" class="headerlink" title="1 启动流程"></a>1 启动流程</h2><div style="width:100%;margin:auto"><img src="/2022/05/11/RT-Thread%E5%AD%A6%E4%B9%A0/1.jpg" class></div>
+
+<p>按照<code>cortex-M</code>内核的启动方式，首先会从启动文件（<code>startup_stm32f103xb.S</code>）中开始执行，在此文件里面是用汇编语言编写，具体的工作是初始化部分重要的寄存器，如SP和PC、初始化中断向量地址、配置时钟系统、然后跳转到<code>main()</code>主函数。其实在这里里面，根据不同的编译器，会有不同的入口名称，如在<code>gcc</code>中用的就是<code>entry()</code>，<code>armcc</code>中就是跳转到<code>$$sub$main()</code>中…..<code>RTOS</code>的内核启动就是在这里面进行。</p>
+<p>以往是以<code>MDK</code>为例，这次以<code>gcc</code>为例。在RT-Thread Studio中编译器选择的是<code>gcc</code>编译器。如上所述，在进入<code>main()</code>前，执行的是<code>entry()</code>函数，实际编写，使用的是c语言。</p>
+<ul>
+<li><p><code>rt-thread/src/components.c</code>中编写了编译器对应的执行函数。如：</p>
+<ol>
+<li><code>ARMCC</code>中的<code>int $Sub$$main(void)</code></li>
+<li><code>IAR</code>中的<code>int __low_level_init(void)</code></li>
+<li><code>gcc</code>中的<code>int entry(void)</code></li>
+</ol>
+<p>在这些函数中，主要调用的是<code>rtthread_startup()</code>，从中启动<code>RTOS</code>。</p>
+<p>同样在<code>components.c</code>中，编写了<code>int rtthread_startup(void)</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">rtthread_startup</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    rt_hw_interrupt_disable();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* board level initialization</span></span><br><span class="line"><span class="comment">     * <span class="doctag">NOTE:</span> please initialize heap inside board initialization.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    rt_hw_board_init();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* show RT-Thread version */</span></span><br><span class="line">    rt_show_version();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* timer system initialization */</span></span><br><span class="line">    rt_system_timer_init();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* scheduler system initialization */</span></span><br><span class="line">    rt_system_scheduler_init();</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> RT_USING_SIGNALS</span></span><br><span class="line">    <span class="comment">/* signal system initialization */</span></span><br><span class="line">    rt_system_signal_init();</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* RT_USING_SIGNALS */</span></span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* create init_thread */</span></span><br><span class="line">    rt_application_init();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* timer thread initialization */</span></span><br><span class="line">    rt_system_timer_thread_init();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* idle thread initialization */</span></span><br><span class="line">    rt_thread_idle_init();</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> RT_USING_SMP</span></span><br><span class="line">    rt_hw_spin_lock(&amp;_cpus_lock);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* RT_USING_SMP */</span></span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* start scheduler */</span></span><br><span class="line">    rt_system_scheduler_start();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* never reach here */</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从中可见，都是一些初始化的工作。</p>
+<p>(1) 关闭所有非必要中断，调用<code>rt_hw_board_init();</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">RT_WEAK <span class="type">void</span> <span class="title function_">rt_hw_board_init</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">extern</span> <span class="type">void</span> <span class="title function_">hw_board_init</span><span class="params">(<span class="type">char</span> *clock_src, <span class="type">int32_t</span> clock_src_freq, <span class="type">int32_t</span> clock_target_freq)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Heap initialization */</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined(RT_USING_HEAP)</span></span><br><span class="line">    rt_system_heap_init((<span class="type">void</span> *) HEAP_BEGIN, (<span class="type">void</span> *) HEAP_END);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">    hw_board_init(BSP_CLOCK_SOURCE, BSP_CLOCK_SOURCE_FREQ_MHZ, BSP_CLOCK_SYSTEM_FREQ_MHZ);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Set the shell console output device */</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined(RT_USING_DEVICE) &amp;&amp; defined(RT_USING_CONSOLE)</span></span><br><span class="line">    rt_console_set_device(RT_CONSOLE_DEVICE_NAME);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Board underlying hardware initialization */</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> RT_USING_COMPONENTS_INIT</span></span><br><span class="line">    rt_components_board_init();</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>—&gt; 在<code>drivers/board.c</code>中编写，主要实现的是系统的堆初始化；板级初始化，如时钟主频、<code>systick</code>、<code>GPIO</code>引脚（所以在<code>RTOS</code>中，所有的<code>GPIO</code>时钟都是被enable的?）、串口初始化。为后面的控制台使用做准备。</p>
+<p>—&gt;再调用<code>rt_console_set_device(RT_CONSOLE_DEVICE_NAME);</code>，开启使用<code>shell console</code>。默认选择的是<code>uart1</code>，宏<code>RT_CONSOLE_DEVICE_NAME</code>在<code>rtconfig.h</code>中定义。</p>
+<p>—&gt;调用<code>rt_components_board_init();</code>初始化底层外设（自动初始化）。***可以再研究以下</p>
+<p><code>rt_components_board_init()</code> 函数执行的比较早，主要初始化相关硬件环境，执行这个函数时将会遍历通过 <code>INIT_BOARD_EXPORT(fn) </code>申明的初始化函数表，并调用各个函数。<code>rt_components_init()</code> 函数会在操作系统运行起来之后创建的 <code>main</code> 线程里被调用执行，这个时候硬件环境和操作系统已经初始化完成，可以执行应用相关代码。<code>rt_components_init()</code> 函数会遍历通过剩下的其他几个宏申明的初始化函数表。</p>
+<p>RT-Thread 的自动初始化机制使用了自定义<code> RTI</code> 符号段，将需要在启动时进行初始化的函数指针放到了该段中，形成一张初始化函数表，在系统启动过程中会遍历该表，并调用表中的函数，达到自动初始化的目的。</p>
+<div style="width:100%;margin:auto"><img src="/2022/05/11/RT-Thread%E5%AD%A6%E4%B9%A0/2.jpg" class></div>
+
+<p>(2) 调用<code>rt_show_version();</code>打印<code>RTOS</code>版本号，因为已经初始化了串口，所以可以使用控制台打印信息。</p>
+<p>(3) <code>rt_system_timer_init();</code>初始化软件定时器，用于时间片吧？</p>
+<p>(4) <code>rt_system_scheduler_init();</code>初始化系统调度器</p>
+<p>(5) 调用<code>rt_application_init();</code>初始化应用，创建初始化线程。主要是创建主线程<code>main</code>。在开启调度以后，就会进入主线程入口函数<code>void main_thread_entry(void *parameter)</code>从而跳转到<code>main()</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">main_thread_entry</span><span class="params">(<span class="type">void</span> *parameter)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">extern</span> <span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> RT_USING_COMPONENTS_INIT</span></span><br><span class="line">    <span class="comment">/* RT-Thread components initialization */</span></span><br><span class="line">    rt_components_init();</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* RT_USING_COMPONENTS_INIT */</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> RT_USING_SMP</span></span><br><span class="line">    rt_hw_secondary_cpu_up();</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* RT_USING_SMP */</span></span></span><br><span class="line">    <span class="comment">/* invoke system main function */</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __ARMCC_VERSION</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">extern</span> <span class="type">int</span> $Super$$main(<span class="type">void</span>);</span><br><span class="line">        $Super$$main(); <span class="comment">/* for ARMCC. */</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__ICCARM__) || defined(__GNUC__) || defined(__TASKING__)</span></span><br><span class="line">    main();</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">rt_application_init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">rt_thread_t</span> tid;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> RT_USING_HEAP</span></span><br><span class="line">    tid = rt_thread_create(<span class="string">&quot;main&quot;</span>, main_thread_entry, RT_NULL,</span><br><span class="line">                           RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, <span class="number">20</span>);</span><br><span class="line">    RT_ASSERT(tid != RT_NULL);</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">    <span class="type">rt_err_t</span> result;</span><br><span class="line"></span><br><span class="line">    tid = &amp;main_thread;</span><br><span class="line">    result = rt_thread_init(tid, <span class="string">&quot;main&quot;</span>, main_thread_entry, RT_NULL,</span><br><span class="line">                            main_stack, <span class="keyword">sizeof</span>(main_stack), RT_MAIN_THREAD_PRIORITY, <span class="number">20</span>);</span><br><span class="line">    RT_ASSERT(result == RT_EOK);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* if not define RT_USING_HEAP, using to eliminate the warning */</span></span><br><span class="line">    (<span class="type">void</span>)result;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* RT_USING_HEAP */</span></span></span><br><span class="line"></span><br><span class="line">    rt_thread_startup(tid);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>(6) 调用<code>rt_system_timer_thread_init();</code>创建定时器线程，并开启调度（每个线程都有自己的定时器，用于计时，使用时间片轮转功能？）。</p>
+<p>(7) 调用<code>rt_thread_idle_init();</code>创建空闲线程，（有什么用？）</p>
+<p>(8) 最后调用<code>rt_system_scheduler_start();</code>正式开启系统调度器，开始对线程进行调度，选择最高优先级的线程进行执行。而前面创建的线程只是在就绪态，并没有开始调度。因为创建了主线程，因此会开启主线程调度，并进入主线程入口函数，正式进入<code>main()</code>函数中。在主函数中，要么没有无限循环，使得主线程的主函数只调用一次，然后销毁主线程；要么就在无限循环中使用延时函数，使得主函数会出现阻塞。否则会造成线程调度出现问题。</p>
+<h2 id="设备驱动"><a href="#设备驱动" class="headerlink" title="设备驱动"></a>设备驱动</h2><p>对于<code>RT-Thread</code>来说，它的设备驱动是具有面向对象和分层思想。主要分为下图的中间三层。I&#x2F;O设备管理层、设备驱动框架层和设备驱动层。</p>
+<p>简单来说（了解还不够深入）：</p>
+<ol>
+<li><p>IO设备管理层（归属于<code>rt-thread/components/src/device.c</code>）</p>
+<p>主要是对设备对象的注册、创建、查找、打开、关闭等操作，提供一套接口。</p>
+</li>
+<li><p>设备驱动框架层（归属于<code>rt-thread/components/drivers</code>文件夹下，会有对不同外设编写的.c文件）</p>
+<p>主要是实现同类硬件设备驱动的抽象，将不同厂家的同类硬件设备驱动中相同的部分抽取出来，将不同部分留出接口，由驱动程序实现。</p>
+</li>
+<li><p>设备驱动层（归属于工程的<code>driver</code>文件夹下）</p>
+<p>主要是实现对外设的底层驱动进行封装，包括了对I&#x2F;O设备的注册、外设初始化、配置、总线挂载、读\写操作等。</p>
+</li>
+</ol>
+<div style="width:100%;margin:auto"><img src="/2022/05/11/RT-Thread%E5%AD%A6%E4%B9%A0/3.jpg" class></div>
+
+<div style="width:100%;margin:auto"><img src="/2022/05/11/RT-Thread%E5%AD%A6%E4%B9%A0/4.jpg" class></div>
+
+<h2 id="以SPI设备驱动为例"><a href="#以SPI设备驱动为例" class="headerlink" title="以SPI设备驱动为例"></a>以<code>SPI</code>设备驱动为例</h2><h3 id="0-开发工具"><a href="#0-开发工具" class="headerlink" title="0 开发工具"></a>0 开发工具</h3><ul>
+<li>RT-Thread Studio </li>
+<li>STM32F103C8T6</li>
+<li>RT-Thread 4.0.4</li>
+</ul>
+<p>实验目的：学习使用RT-Thread的设备驱动框架，以<code>SPI</code>接口驱动<code>st7789 TFT LCD</code>屏为例。</p>
+<p>用RT-Thread Studio生成的代码，默认使用的是<code>HSI</code>，如要使用<code>HSE</code>，则需要在<code>CubeMX</code>中配置好时钟，并生成代码，将主函数中的<code>SystemClock_Config()</code>时钟配置代码复制到<code>drv_clk.c</code>的<code>system_clock_config()</code>中。</p>
+<p>在<code>drivers/board.h</code>中有对外设的使用方法：</p>
+<ol>
+<li>从<code>RT-Thread Settings</code>中开启<code>SPI</code>设备，所有与<code>SPI</code>设备相关的宏会被打开。如<code>rtconfig.h</code>中会有<code>#define RT_USING_SPI</code>此宏定义。</li>
+<li>在<code>drivers/board.h</code>中去除对应外设的注释<code>#define BSP_USING_SPI1</code></li>
+<li>从<code>STM32CubeMX</code>中生成<code>SPI</code>外设的初始化函数，并将对应的<code>spi.c</code>中生成的初始化代码<code>HAL_SPI_MspInit()</code>复制到<code>drivers/board.c</code>文件下。（难怪怎么都找不到<code>SPI</code>初始化函数，这个主要是对<code>SPI</code>用到的引脚初始化函数）由于此函数在库函数中是弱定义且实际上是一个空函数，因此由<code>CubeMX</code>生成后，将其添加到<code>board.c</code>中完成定义即可。</li>
+<li>除此之外，还要在<code>drivers/stm32f1xx_hal_conf.h</code>中取消相关模块的注释，以此来使用HAL库的函数。</li>
+</ol>
+<h3 id="配置过程"><a href="#配置过程" class="headerlink" title="配置过程"></a>配置过程</h3><p>创建配置文件和应用程序文件（这个随意，也可以只创建一份额<code>.c/.h</code>文件）。这里创建名为<code>app_lcd.c/app_lcd.h</code>两个文件，c文件中是对<code>SPI</code>的初始化、配置、和应用程序。这里重点讲初始化和配置。使用的外设是<code>SPI1</code>，引脚配置在<code>HAL_SPI_MspInit()</code>中已经完成，现在是对<code>SPI1</code>的配置。为了标准化，按照<code>RT-Thread</code>给的例程进行命名函数名：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">rt_hw_st7789_config</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">rt_err_t</span> res;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* oled use PC8 as CS */</span></span><br><span class="line">    spi_cs.GPIO_Pin = GPIO_PIN_2;</span><br><span class="line">    spi_cs.GPIOx = GPIOB;</span><br><span class="line">    rt_pin_mode(CS_PIN_NUM, PIN_MODE_OUTPUT);    <span class="comment">/* 设置片选管脚模式为输出 */</span></span><br><span class="line">    rt_pin_mode(DC_PIN_NUM, PIN_MODE_OUTPUT);</span><br><span class="line">    rt_pin_mode(RES_PIN_NUM, PIN_MODE_OUTPUT);</span><br><span class="line">    rt_pin_mode(BLK_PIN_NUM, PIN_MODE_OUTPUT);</span><br><span class="line">    res = rt_spi_bus_attach_device(&amp;spi_dev_st7789, SPI_ST7789_DEVICE_NAME, SPI_BUS_NAME, (<span class="type">void</span>*)&amp;spi_cs);</span><br><span class="line">    <span class="keyword">if</span> (res != RT_EOK)</span><br><span class="line">    &#123;</span><br><span class="line">        rt_kprintf(<span class="string">&quot;rt_spi_bus_attach_device!\r\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* config spi */</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">rt_spi_configuration</span> <span class="title">cfg</span>;</span></span><br><span class="line">        cfg.data_width = <span class="number">8</span>;</span><br><span class="line">        cfg.mode = RT_SPI_MASTER | RT_SPI_MODE_0 | RT_SPI_MSB;</span><br><span class="line">        cfg.max_hz = <span class="number">42</span> * <span class="number">1000</span> *<span class="number">1000</span>; <span class="comment">/* 20M,SPI max 42MHz,ssd1351 4-wire spi */</span></span><br><span class="line"></span><br><span class="line">        rt_spi_configure(&amp;spi_dev_st7789, &amp;cfg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> RT_EOK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>int rt_hw_st7789_config(void)</code>函数是对<code>SPI</code>的配置，在此之前，<code>SPI1</code>总线已经被使能打开，这里需要将<code>SPI</code>设备挂载到<code>SPI</code>总线上，使用的是<code>rt_spi_bus_attach_device()</code>，参数依次是此<code>SPI</code>设备的句柄、设备名称、总线名称、和用户数据（指私有变量，<code>SPI</code>特有的，这里是片选信号引脚）。成功挂载后，定义<code>SPI</code>配置结构体（和<code>STM32</code>中库函数的配置结构体一样的作用）给定数据宽度、模式（主从、采样规则、高低先行）、速率。然后调用<code>rt_spi_configure()</code>传入句柄和配置结构体，实现外设的配置。然后就是编写数据发送和接收的函数，初始化函数（配置函数在这里被调用，以及<code>st7789</code>芯片的配置过程），在后面可以使用<code>INIT_PREV_EXPORT(rt_hw_st7789_Init)</code>预初始化。</p>
+<div style="width:100%;margin:auto"><img src="/2022/05/11/RT-Thread%E5%AD%A6%E4%B9%A0/5.jpg" class></div></li>
+</ul>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/11/RT-Thread%E5%AD%A6%E4%B9%A0/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-C语言基础-3" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
